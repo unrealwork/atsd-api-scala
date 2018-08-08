@@ -3,7 +3,7 @@ package com.axibase.tsd
 import com.softwaremill.sttp._
 import org.slf4j.LoggerFactory
 
-import scala.util.Try
+import scala.util.{Failure, Try}
 
 class Client(val config: Config) {
   private val logger = LoggerFactory.getLogger(classOf[Client])
@@ -17,7 +17,8 @@ class Client(val config: Config) {
       .map(restMethod.method)
       .map(request => request.auth.basic(config.credentials.user, config.credentials.password))
       .map(request => request.send())
-      .map(response => restMethod.execute(response))
+      .map(response => restMethod.extract(response))
+      .getOrElse(Failure(new Exception()))
   }
 
   private def addAuth(request: Request[String, Nothing]): Request[String, Nothing] = {
